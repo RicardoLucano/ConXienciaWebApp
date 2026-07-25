@@ -1,0 +1,42 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+dist/
+dist-ssr/
+*.local
+
+# C++ Build & Output
+**/build/
+**/out/
+**/bin/
+**/obj/
+**/x64/
+**/x86/
+**/ARM/
+**/ARM64/
+**/Debug/
+**/Release/
+**/MinSizeRel/
+**/RelWithDebInfo/
+build_output.txt
+
+# Editor / IDE configuration
+.vscode/
+!.vscode/extensions.json
+.idea/
+.vs/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+
+# Temporary / OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini

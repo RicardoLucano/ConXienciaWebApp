@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  fullName      String         @map("full_name")
+  avatarUrl     String?        @map("avatar_url")
+  role          String         @default("member")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  customers     Customer[]
+  partners      Partner[]
+  customerLeads CustomerLead[]
+  partnerLeads  PartnerLead[]
+  notifications Notification[]
+  resources     Resource[]
+
+  @@map("users")
+}
+
+model Customer {
+  id                 String           @id @default(uuid())
+  userId             String           @map("user_id")
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName           String           @map("full_name")
+  phone              String?
+  country            String?
+  city               String?
+  notes              String?
+  interestedProducts String[]         @default([]) @map("interested_products")
+  purchasedProducts  String[]         @default([]) @map("purchased_products")
+  purchaseHistory    PurchaseRecord[]
+  lastPurchaseDate   DateTime?        @map("last_purchase_date")
+  nextFollowUp       DateTime?        @map("next_follow_up")
+  status             String           @default("active")
+  tags               String[]         @default([])
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  @@map("customers")
+}
+
+model PurchaseRecord {
+  id         String   @id @default(uuid())
+  customerId String   @map("customer_id")
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    String
+  amount     Float
+  date       DateTime
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("purchase_history")
+}
+
+model CustomerLead {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  phone        String?
+  interest     String?
+  notes        String?
+  followUpDate DateTime? @map("follow_up_date")
+  status       String    @default("new")
+  tags         String[]  @default([])
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("customer_leads")
+}
+
+model Partner {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  phone        String?
+  country      String?
+  notes        String?
+  currentRank  String    @default("Socio") @map("current_rank")
+  teamSize     Int       @default(0) @map("team_size")
+  lastContact  DateTime? @map("last_contact")
+  nextFollowUp DateTime? @map("next_follow_up")
+  tags         String[]  @default([])
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("partners")
+}
+
+model PartnerLead {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  phone         String?
+  notes         String?
+  interestLevel String    @default("medium") @map("interest_level")
+  followUpDate  DateTime? @map("follow_up_date")
+  status        String    @default("new")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("partner_leads")
+}
+
+model Notification {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          String   @map("type")
+  referenceType String   @map("reference_type")
+  referenceId   String   @map("reference_id")
+  referenceName String   @map("reference_name")
+  title         String
+  body          String
+  read          Boolean  @default(false)
+  archived      Boolean  @default(false)
+  scheduledAt   DateTime @map("scheduled_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+model Resource {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  url        String
+  icon       String   @default("🔗")
+  category   String   @default("Corporativo")
+  orderIndex Int      @default(0) @map("order_index")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("resources")
+}
