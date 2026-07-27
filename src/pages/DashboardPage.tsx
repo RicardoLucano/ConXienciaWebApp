@@ -7,7 +7,7 @@ import {
   TrendingUp, AlertTriangle, Calendar,
   ArrowUpRight, Zap, Bell
 } from 'lucide-react'
-import { mockActivityData, mockMonthlyData } from '../data/mockData'
+
 import { formatDate, isOverdue } from '../lib/utils'
 import { Link } from 'react-router-dom'
 import { useBusinessHub } from '../contexts/BusinessHubContext'
@@ -29,7 +29,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export default function DashboardPage() {
-  const { stats, customers, notifications } = useBusinessHub()
+  const { stats, customers, notifications, activityData, monthlyData } = useBusinessHub()
   const urgentFollowUps = customers.filter(c => c.nextFollowUp && isOverdue(c.nextFollowUp))
   const unreadNotifs = notifications.filter(n => !n.read && !n.archived)
 
@@ -116,7 +116,7 @@ export default function DashboardPage() {
             <span className="badge-gray badge text-xs">Esta semana</span>
           </div>
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={mockActivityData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+            <AreaChart data={activityData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="gClientes" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.3} />
@@ -149,7 +149,7 @@ export default function DashboardPage() {
             <span className="badge-gray badge text-xs">Últimos 6 meses</span>
           </div>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={mockMonthlyData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+            <BarChart data={monthlyData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
               barCategoryGap="30%">
               <CartesianGrid strokeDasharray="3 3" stroke="#3d2e7a" opacity={0.5} />
               <XAxis dataKey="month" stroke="#8b7ec8" tick={{ fontSize: 11 }} />

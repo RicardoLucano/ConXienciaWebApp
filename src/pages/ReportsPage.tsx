@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, PieChart, Pie, Cell
 } from 'recharts'
-import { mockMonthlyData } from '../data/mockData'
+
 import { useBusinessHub } from '../contexts/BusinessHubContext'
 import { exportToCSV, exportToPDF } from '../lib/exportUtils'
 
@@ -24,7 +24,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export default function ReportsPage() {
-  const { customers, partners, customerLeads, partnerLeads } = useBusinessHub()
+  const { customers, partners, customerLeads, partnerLeads, monthlyData } = useBusinessHub()
 
   const pieData = [
     { name: 'Clientes', value: customers.length },
@@ -98,7 +98,7 @@ export default function ReportsPage() {
         <div className="card p-5">
           <h3 className="font-display font-semibold text-fuxion-100 mb-5">Crecimiento Mensual</h3>
           <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={mockMonthlyData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barCategoryGap="30%">
+            <BarChart data={monthlyData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barCategoryGap="30%">
               <CartesianGrid strokeDasharray="3 3" stroke="#3d2e7a" opacity={0.5} />
               <XAxis dataKey="month" stroke="#8b7ec8" tick={{ fontSize: 11 }} />
               <YAxis stroke="#8b7ec8" tick={{ fontSize: 11 }} />

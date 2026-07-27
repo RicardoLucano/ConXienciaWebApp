@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async syncUser(payload: { sub: string; email: string; user_metadata?: { full_name?: string; avatar_url?: string } }) {
     const { sub, email, user_metadata } = payload;

@@ -139,14 +139,18 @@ export default function ResourcesPage() {
                     className="btn-ghost p-1.5 text-fuxion-400 hover:text-fuxion-300" title="Abrir">
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
-                  <button onClick={() => { setEditing(r); setModal(true) }}
-                    className="btn-ghost p-1.5" title="Editar">
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={() => handleDelete(r.id)}
-                    className="btn-ghost p-1.5 hover:text-red-400" title="Eliminar">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {!r.isDefault && (
+                    <>
+                      <button onClick={() => { setEditing(r); setModal(true) }}
+                        className="btn-ghost p-1.5" title="Editar">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => handleDelete(r.id)}
+                        className="btn-ghost p-1.5 hover:text-red-400" title="Eliminar">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}

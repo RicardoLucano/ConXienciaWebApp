@@ -99,6 +99,7 @@ export interface Resource {
   icon: string
   category: string
   orderIndex: number
+  isDefault?: boolean
 }
 
 export interface User {

@@ -35,6 +35,8 @@ interface BusinessHubContextType {
   resources: Resource[]
   setResources: React.Dispatch<React.SetStateAction<Resource[]>>
   stats: DashboardStats
+  activityData: { day: string; clientes: number; socios: number; prospectos: number }[]
+  monthlyData: { month: string; clientes: number; socios: number }[]
 }
 
 const BusinessHubContext = createContext<BusinessHubContextType | null>(null)
@@ -98,32 +100,32 @@ export function BusinessHubProvider({ children }: { children: ReactNode }) {
   // ─── Local State Arrays (Fallbacks) ────────────────────────────────────────
   const [localCustomers, setLocalCustomers] = useState<Customer[]>(() => {
     const raw = localStorage.getItem('fuxion_customers')
-    return raw ? JSON.parse(raw) : mockCustomers
+    return raw ? JSON.parse(raw) : []
   })
 
   const [localCustomerLeads, setLocalCustomerLeads] = useState<CustomerLead[]>(() => {
     const raw = localStorage.getItem('fuxion_customer_leads')
-    return raw ? JSON.parse(raw) : mockCustomerLeads
+    return raw ? JSON.parse(raw) : []
   })
 
   const [localPartners, setLocalPartners] = useState<Partner[]>(() => {
     const raw = localStorage.getItem('fuxion_partners')
-    return raw ? JSON.parse(raw) : mockPartners
+    return raw ? JSON.parse(raw) : []
   })
 
   const [localPartnerLeads, setLocalPartnerLeads] = useState<PartnerLead[]>(() => {
     const raw = localStorage.getItem('fuxion_partner_leads')
-    return raw ? JSON.parse(raw) : mockPartnerLeads
+    return raw ? JSON.parse(raw) : []
   })
 
   const [localNotifications, setLocalNotifications] = useState<Notification[]>(() => {
     const raw = localStorage.getItem('fuxion_notifications')
-    return raw ? JSON.parse(raw) : mockNotifications
+    return raw ? JSON.parse(raw) : []
   })
 
   const [localResources, setLocalResources] = useState<Resource[]>(() => {
     const raw = localStorage.getItem('fuxion_resources')
-    return raw ? JSON.parse(raw) : mockResources
+    return raw ? JSON.parse(raw) : []
   })
 
   // Synchronize local fallback states to localStorage
@@ -433,6 +435,9 @@ export function BusinessHubProvider({ children }: { children: ReactNode }) {
     conversionRate,
   }
 
+  const activityData = getWeeklyActivity(customers, partners, customerLeads)
+  const monthlyData = getMonthlyGrowth(customers, partners)
+
   return (
     <BusinessHubContext.Provider value={{
       customers, setCustomers,
@@ -441,11 +446,105 @@ export function BusinessHubProvider({ children }: { children: ReactNode }) {
       partnerLeads, setPartnerLeads,
       notifications, setNotifications,
       resources, setResources,
-      stats
+      stats,
+      activityData,
+      monthlyData
     }}>
       {children}
     </BusinessHubContext.Provider>
   )
+}
+
+function getWeeklyActivity(customers: Customer[], partners: Partner[], customerLeads: CustomerLead[]) {
+  const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+  const orderedDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+  
+  const counts: Record<string, { clientes: number; socios: number; prospectos: number }> = {}
+  orderedDays.forEach(d => {
+    counts[d] = { clientes: 0, socios: 0, prospectos: 0 }
+  })
+
+  const now = new Date()
+  const currentDay = now.getDay()
+  const monday = new Date(now)
+  const diff = now.getDate() - currentDay + (currentDay === 0 ? -6 : 1)
+  monday.setDate(diff)
+  monday.setHours(0, 0, 0, 0)
+
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  sunday.setHours(23, 59, 59, 999)
+
+  const isThisWeek = (dateStr: string) => {
+    const d = new Date(dateStr)
+    return d >= monday && d <= sunday
+  }
+
+  customers.forEach(c => {
+    if (c.createdAt && isThisWeek(c.createdAt)) {
+      const d = new Date(c.createdAt)
+      const dayName = days[d.getDay()]
+      if (counts[dayName]) counts[dayName].clientes++
+    }
+  })
+
+  partners.forEach(p => {
+    if (p.createdAt && isThisWeek(p.createdAt)) {
+      const d = new Date(p.createdAt)
+      const dayName = days[d.getDay()]
+      if (counts[dayName]) counts[dayName].socios++
+    }
+  })
+
+  customerLeads.forEach(l => {
+    if (l.createdAt && isThisWeek(l.createdAt)) {
+      const d = new Date(l.createdAt)
+      const dayName = days[d.getDay()]
+      if (counts[dayName]) counts[dayName].prospectos++
+    }
+  })
+
+  return orderedDays.map(day => ({
+    day,
+    clientes: counts[day].clientes,
+    socios: counts[day].socios,
+    prospectos: counts[day].prospectos,
+  }))
+}
+
+function getMonthlyGrowth(customers: Customer[], partners: Partner[]) {
+  const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+  const last6Months: { year: number; monthIdx: number; label: string }[] = []
+  const now = new Date()
+  
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    last6Months.push({
+      year: d.getFullYear(),
+      monthIdx: d.getMonth(),
+      label: monthNames[d.getMonth()],
+    })
+  }
+
+  return last6Months.map(({ year, monthIdx, label }) => {
+    const clientes = customers.filter(c => {
+      if (!c.createdAt) return false
+      const d = new Date(c.createdAt)
+      return d.getFullYear() === year && d.getMonth() === monthIdx
+    }).length
+
+    const socios = partners.filter(p => {
+      if (!p.createdAt) return false
+      const d = new Date(p.createdAt)
+      return d.getFullYear() === year && d.getMonth() === monthIdx
+    }).length
+
+    return {
+      month: label,
+      clientes,
+      socios,
+    }
+  })
 }
 
 export function useBusinessHub() {
